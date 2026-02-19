@@ -405,15 +405,17 @@ function confirmPurchase() {
     if (!currentItem) return;
     if (myPoints < currentItem.price) return;
 
-    myPoints -= currentItem.price;
+    const purchasedItem = currentItem; // closeModal()이 null로 만들기 전에 저장
+
+    myPoints -= purchasedItem.price;
     localStorage.setItem("points", myPoints);
-    document.getElementById("myPoints").innerText = myPoints + " P";
+    document.getElementById("myPoints").innerText = myPoints + " P"; // 헤더 즉시 반영
 
     closeModal();
 
     // 성공 모달
     document.getElementById("successItemName").innerText =
-        currentItem.emoji + " " + currentItem.name.replace(/\n/g, " ") + " 구매 완료";
+        purchasedItem.emoji + " " + purchasedItem.name.replace(/\n/g, " ") + " 구매 완료";
     document.getElementById("remainingPoints").innerText =
         "잔여 포인트: " + myPoints + " P";
     document.getElementById("successOverlay").classList.add("active");
@@ -426,5 +428,4 @@ document.getElementById("modalOverlay").addEventListener("click", function(e) {
 </script>
 
 </body>
-
 </html>

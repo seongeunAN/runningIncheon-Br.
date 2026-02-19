@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포인트 상점</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.header {
+    max-width: 480px;
+    margin: 0 auto 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-btn {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.back-btn:hover { background: #e0e0e0; }
+
+.header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #1a1a2e;
+}
+
+.my-points {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.grid {
+    max-width: 480px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.item-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+}
+
+.item-card.sold-out {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.item-emoji {
+    font-size: 36px;
+}
+
+.item-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+}
+
+.item-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.item-price {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: auto;
+}
+
+.sold-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ccc;
+    color: white;
+    font-size: 10px;
+    border-radius: 6px;
+    padding: 2px 6px;
+}
+
+/* 모달 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 320px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.modal-emoji { font-size: 48px; margin-bottom: 8px; }
+.modal h3 { margin: 0 0 6px; font-size: 18px; color: #1a1a2e; }
+.modal .modal-desc { font-size: 13px; color: #888; margin-bottom: 16px; }
+
+.modal-price {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ff5722;
+    margin-bottom: 4px;
+}
+
+.modal-my-point {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.modal-my-point span {
+    color: #4facfe;
+    font-weight: bold;
+}
+
+.modal-not-enough {
+    font-size: 13px;
+    color: #f44336;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #f0f0f0;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-cancel:hover { background: #e0e0e0; }
+
+.btn-confirm {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-confirm:hover { opacity: 0.9; }
+.btn-confirm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* 성공 모달 */
+.success-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+}
+.success-overlay.active { display: flex; }
+
+.success-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 24px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.2s ease;
+}
+
+.success-modal .big-emoji { font-size: 60px; margin-bottom: 12px; }
+.success-modal h3 { margin: 0 0 8px; font-size: 20px; color: #1a1a2e; }
+.success-modal p { font-size: 14px; color: #888; margin-bottom: 20px; }
+.success-modal .remaining {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff5722;
+    margin-bottom: 20px;
+}
+
+.btn-home {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn-home:hover { opacity: 0.9; }
+</style>
+</head>
+
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="header-left">
+        <button class="back-btn" onclick="location.href='index.html'">← 뒤로</button>
+        <h2>🎁 포인트 상점</h2>
+    </div>
+    <div class="my-points" id="myPoints">0 P</div>
+</div>
+
+<!-- 상품 그리드 -->
+<div class="grid" id="grid"></div>
+
+<!-- 구매 확인 모달 -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-emoji" id="modalEmoji"></div>
+        <h3 id="modalName"></h3>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-price" id="modalPrice"></div>
+        <div class="modal-my-point" id="modalMyPoint"></div>
+        <div class="btn-row">
+            <button class="btn-cancel" onclick="closeModal()">취소</button>
+            <button class="btn-confirm" id="btnConfirm" onclick="confirmPurchase()">결제하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 성공 모달 -->
+<div class="success-overlay" id="successOverlay">
+    <div class="success-modal">
+        <div class="big-emoji">🎉</div>
+        <h3>결제 완료!</h3>
+        <p id="successItemName"></p>
+        <div class="remaining" id="remainingPoints"></div>
+        <button class="btn-home" onclick="location.href='index.html'">홈으로 돌아가기</button>
+    </div>
+</div>
+
+<script>
+// ===== 상품 목록 (여기서 자유롭게 수정하세요) =====
+const items = [
+    {
+        id: 1,
+        emoji: "☕",
+        name: "영종도 카페\n아메리카노 쿠폰",
+        desc: "영종도 제휴 카페\n아메리카노 1잔",
+        price: 80,
+    },
+    {
+        id: 2,
+        emoji: "🍜",
+        name: "해물칼국수\n할인 쿠폰",
+        desc: "영종도 맛집\n1,000원 할인",
+        price: 75,
+    },
+    {
+        id: 3,
+        emoji: "🍦",
+        name: "아이스크림\n교환권",
+        desc: "편의점 제휴\n아이스크림 1개",
+        price: 50,
+    },
+    {
+        id: 4,
+        emoji: "🥐",
+        name: "베이커리\n빵 쿠폰",
+        desc: "영종도 베이커리\n빵 1개 교환",
+        price: 60,
+    },
+];
+
+let currentItem = null;
+let myPoints = Number(localStorage.getItem("points")) || 0;
+
+document.getElementById("myPoints").innerText = myPoints + " P";
+
+// 상품 카드 렌더링
+function renderGrid() {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+            <div class="item-emoji">${item.emoji}</div>
+            <div class="item-name">${item.name.replace(/\n/g, "<br>")}</div>
+            <div class="item-desc">${item.desc.replace(/\n/g, "<br>")}</div>
+            <div class="item-price">${item.price} P</div>
+        `;
+        card.addEventListener("click", () => openModal(item));
+        grid.appendChild(card);
+    });
+}
+
+renderGrid();
+
+// 모달 열기
+function openModal(item) {
+    currentItem = item;
+
+    document.getElementById("modalEmoji").innerText = item.emoji;
+    document.getElementById("modalName").innerText = item.name.replace(/\n/g, " ");
+    document.getElementById("modalDesc").innerText = item.desc.replace(/\n/g, " ");
+    document.getElementById("modalPrice").innerText = item.price + " P";
+
+    const enough = myPoints >= item.price;
+    const myPtEl = document.getElementById("modalMyPoint");
+    const btn = document.getElementById("btnConfirm");
+
+    if (enough) {
+        myPtEl.innerHTML = `보유 포인트: <span>${myPoints} P</span> → 결제 후 <span>${myPoints - item.price} P</span>`;
+        myPtEl.className = "modal-my-point";
+        btn.disabled = false;
+    } else {
+        myPtEl.innerHTML = `보유 포인트: <span>${myPoints} P</span> — 포인트가 부족합니다`;
+        myPtEl.className = "modal-not-enough";
+        btn.disabled = true;
+    }
+
+    document.getElementById("modalOverlay").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("modalOverlay").classList.remove("active");
+    currentItem = null;
+}
+
+// 결제 확정
+function confirmPurchase() {
+    if (!currentItem) return;
+    if (myPoints < currentItem.price) return;
+
+    myPoints -= currentItem.price;
+    localStorage.setItem("points", myPoints);
+
+    closeModal();
+
+    // 성공 모달
+    document.getElementById("successItemName").innerText =
+        currentItem.emoji + " " + currentItem.name.replace(/\n/g, " ") + " 구매 완료";
+    document.getElementById("remainingPoints").innerText =
+        "잔여 포인트: " + myPoints + " P";
+    document.getElementById("successOverlay").classList.add("active");
+}
+
+// 모달 바깥 클릭 시 닫기
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>

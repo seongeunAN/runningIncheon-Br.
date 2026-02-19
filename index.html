@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청라하늘대교 걷기 챌린지</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.card {
+    background: white;
+    width: 420px;
+    max-width: 95%;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.status {
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #eee;
+}
+button {
+    margin: 6px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.start { background: #4CAF50; color: white; }
+.stop { background: #f44336; color: white; }
+.shop { background: #ff9800; color: white; }
+.reset-btn {
+    margin-top: 10px;
+    background: #555;
+    color: white;
+}
+.stamp-container {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+.stamp {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ff9800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>청라하늘대교 걷기 챌린지</h2>
+
+    <div class="status" id="status">대기 중</div>
+
+    <p>현재 거리: <b id="distance">0</b> km</p>
+    <p>누적 포인트: <b id="points">0</b> P</p>
+    <p>완주 도장: <b id="stampCount">0</b></p>
+
+    <button class="start" onclick="startTracking()">걷기 시작</button>
+    <button class="stop" onclick="stopTracking()">중지</button>
+    <button class="shop" onclick="location.href='shop.html'">포인트 사용</button>
+    <button id="resetBtn" class="reset-btn">기록 초기화</button>
+
+    <div id="coords" style="font-size:12px;color:gray;"></div>
+    <div class="stamp-container" id="stamps"></div>
+</div>
+
+<script>
+const POINT_PER_KM = 100;
+const COMPLETE_BONUS = 50;
+const DAILY_LIMIT = 1000;
+
+const bridgeStart = { lat: 37.54180, lng: 126.61420 };
+const bridgeEnd   = { lat: 37.49350, lng: 126.50880 };
+const radius = 0.3;
+
+let watchId = null;
+let measuring = false;
+let prevPosition = null;
+let totalDistance = 0;
+
+let totalPoints = Number(localStorage.getItem("points")) || 0;
+let stampCount = Number(localStorage.getItem("stamps")) || 0;
+let savedDistance = Number(localStorage.getItem("currentDistance")) || 0;
+
+totalDistance = savedDistance;
+
+document.getElementById("points").innerText = totalPoints;
+document.getElementById("stampCount").innerText = stampCount;
+document.getElementById("distance").innerText = totalDistance.toFixed(3);
+renderStamps();
+
+function updateStatus(text, color="#eee") {
+    const el = document.getElementById("status");
+    el.innerText = text;
+    el.style.background = color;
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2-lat1) * Math.PI/180;
+    const dLon = (lon2-lon1) * Math.PI/180;
+    const a =
+        Math.sin(dLat/2)**2 +
+        Math.cos(lat1*Math.PI/180) *
+        Math.cos(lat2*Math.PI/180) *
+        Math.sin(dLon/2)**2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function isNear(point, current) {
+    return calculateDistance(point.lat, point.lng, current.lat, current.lng) < radius;
+}
+
+function addPoints(earnedPoints) {
+    let todayEarned = Number(localStorage.getItem("todayEarned")) || 0;
+    if (todayEarned + earnedPoints > DAILY_LIMIT) {
+        earnedPoints = Math.max(0, DAILY_LIMIT - todayEarned);
+    }
+    todayEarned += earnedPoints;
+    localStorage.setItem("todayEarned", todayEarned);
+
+    totalPoints += earnedPoints;
+    localStorage.setItem("points", totalPoints);
+    document.getElementById("points").innerText = totalPoints;
+
+    return earnedPoints;
+}
+
+function startTracking() {
+    if (!navigator.geolocation) {
+        updateStatus("GPS 미지원", "#ffcccc");
+        return;
+    }
+
+    updateStatus("다리 시작점 대기 중...", "#fff3cd");
+
+    watchId = navigator.geolocation.watchPosition(position => {
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+
+        document.getElementById("coords").innerText =
+            "위도: " + lat.toFixed(6) +
+            " / 경도: " + lng.toFixed(6) +
+            " / 정확도: " + Math.round(accuracy) + "m";
+
+        const current = { lat, lng };
+
+        if (!measuring && (isNear(bridgeStart, current) || isNear(bridgeEnd, current))) {
+            measuring = true;
+            prevPosition = current;
+            updateStatus("📍 측정 시작!", "#d4edda");
+            return;
+        }
+
+        if (measuring && prevPosition) {
+
+            if (accuracy > 30) return;
+
+            const dist = calculateDistance(
+                prevPosition.lat,
+                prevPosition.lng,
+                lat,
+                lng
+            );
+
+            if (dist < 0.003) return;
+            if (dist > 0.03) return;
+
+            totalDistance += dist;
+            prevPosition = current;
+
+            document.getElementById("distance").innerText =
+                totalDistance.toFixed(3);
+
+            localStorage.setItem("currentDistance", totalDistance);
+
+            if (isNear(bridgeEnd, current)) {
+                completeChallenge();
+            }
+        }
+
+    }, error => {
+        updateStatus("위치 오류: " + error.message, "#ffcccc");
+    }, {
+        enableHighAccuracy: true
+    });
+}
+
+function completeChallenge() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+
+    measuring = false;
+
+    let earnedPoints = Math.floor(totalDistance * POINT_PER_KM);
+    earnedPoints += COMPLETE_BONUS;
+
+    earnedPoints = addPoints(earnedPoints);
+
+    stampCount++;
+    localStorage.setItem("stamps", stampCount);
+    localStorage.removeItem("currentDistance");
+
+    document.getElementById("stampCount").innerText = stampCount;
+    renderStamps();
+
+    updateStatus("🎉 완주 성공! +" + earnedPoints + "P", "#c3e6cb");
+
+    totalDistance = 0;
+    document.getElementById("distance").innerText = "0";
+}
+
+function stopTracking() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+
+    if (measuring) {
+        let earnedPoints = Math.floor(totalDistance * POINT_PER_KM);
+        earnedPoints = addPoints(earnedPoints);
+        updateStatus("중지 — +" + earnedPoints + "P", "#f8d7da");
+    } else {
+        updateStatus("측정 시작 전 종료", "#eee");
+    }
+
+    measuring = false;
+    totalDistance = 0;
+    prevPosition = null;
+    localStorage.removeItem("currentDistance");
+    document.getElementById("distance").innerText = "0";
+}
+
+function renderStamps() {
+    const container = document.getElementById("stamps");
+    container.innerHTML = "";
+    for (let i = 0; i < stampCount; i++) {
+        const stamp = document.createElement("div");
+        stamp.className = "stamp";
+        stamp.innerText = "✓";
+        container.appendChild(stamp);
+    }
+}
+
+document.getElementById("resetBtn").addEventListener("click", function () {
+    if (confirm("모든 기록을 초기화하시겠습니까?")) {
+        localStorage.clear();
+        location.reload();
+    }
+});
+</script>
+
+</body>
+</html>

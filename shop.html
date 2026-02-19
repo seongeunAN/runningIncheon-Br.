@@ -407,6 +407,7 @@ function confirmPurchase() {
 
     myPoints -= currentItem.price;
     localStorage.setItem("points", myPoints);
+    document.getElementById("myPoints").innerText = myPoints + " P";
 
     closeModal();
 
@@ -425,4 +426,5 @@ document.getElementById("modalOverlay").addEventListener("click", function(e) {
 </script>
 
 </body>
+
 </html>

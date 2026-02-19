@@ -441,12 +441,13 @@ function confirmPurchase() {
 
 // 모달 바깥 클릭 시 닫기
 document.getElementById("modalOverlay").addEventListener("click", function(e) {
-    if (e.target === this) closeModal();
+    if (e.target === this) document.getElementById("successOverlay").classList.remove("active");
 });
 </script>
 
 </body>
 </html>
+
 
 
 

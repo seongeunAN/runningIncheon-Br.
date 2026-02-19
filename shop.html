@@ -306,6 +306,18 @@ body {
         <h3>결제 완료!</h3>
         <p id="successItemName"></p>
         <div class="remaining" id="remainingPoints"></div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:6px;">쿠폰 번호</div>
+        <div id="couponCode" style="
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            background: #f5f5f5;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #ff5722;
+        "></div>
         <button class="btn-home" onclick="location.href='index.html'">홈으로 돌아가기</button>
     </div>
 </div>
@@ -413,11 +425,17 @@ function confirmPurchase() {
 
     closeModal();
 
+    // 쿠폰번호 생성 (예: SKY-A3F9-2K81)
+    const coupon = "SKY-" +
+        Math.random().toString(36).substring(2, 6).toUpperCase() + "-" +
+        Math.random().toString(36).substring(2, 6).toUpperCase();
+
     // 성공 모달
     document.getElementById("successItemName").innerText =
         purchasedItem.emoji + " " + purchasedItem.name.replace(/\n/g, " ") + " 구매 완료";
     document.getElementById("remainingPoints").innerText =
         "잔여 포인트: " + myPoints + " P";
+    document.getElementById("couponCode").innerText = coupon;
     document.getElementById("successOverlay").classList.add("active");
 }
 

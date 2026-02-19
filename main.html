@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청라하늘대교 걷기 챌린지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue: #1a6fe8;
+    --blue-light: #4facfe;
+    --accent: #ff5722;
+    --bg: #f0f5ff;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --gray: #8892a4;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 프로젝트 명 */
+.title-card {
+    background: linear-gradient(135deg, var(--blue), #0a3fa8);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 6px 24px rgba(26,111,232,0.30);
+}
+
+.title-card .main-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
+
+.title-card .sub-title {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 400;
+}
+
+/* 버튼 그리드 */
+.btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.nav-btn {
+    background: var(--card);
+    border: none;
+    border-radius: 20px;
+    padding: 32px 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(26,111,232,0.10);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: transform 0.12s, box-shadow 0.12s;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.nav-btn:active {
+    transform: scale(0.97);
+}
+
+.nav-btn:hover {
+    box-shadow: 0 8px 28px rgba(26,111,232,0.18);
+    transform: translateY(-2px);
+}
+
+.nav-btn .btn-icon {
+    font-size: 42px;
+}
+
+.nav-btn .btn-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    text-align: center;
+}
+
+/* 하단 정보 카드 */
+.info-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 20px rgba(26,111,232,0.10);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 11px;
+    color: var(--gray);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--blue);
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.info-value span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray);
+    margin-left: 2px;
+}
+
+.divider {
+    width: 1px;
+    height: 40px;
+    background: #e2e8f0;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 프로젝트 명 -->
+    <div class="title-card">
+        <div class="main-title">🌉 청라하늘대교</div>
+        <div class="sub-title">걷기 챌린지 — 영종도 지역상권 상생 프로젝트</div>
+    </div>
+
+    <!-- 러닝 시작하기 / 포인트 교환하기 -->
+    <div class="btn-grid">
+        <button class="nav-btn" onclick="location.href='index.html'">
+            <span class="btn-icon">🏃</span>
+            <span class="btn-label">러닝<br>시작하기</span>
+        </button>
+        <button class="nav-btn" onclick="location.href='shop.html'">
+            <span class="btn-icon">🎁</span>
+            <span class="btn-label">포인트<br>교환하기</span>
+        </button>
+    </div>
+
+    <!-- 현재 포인트 / 완주 도장 -->
+    <div class="info-card">
+        <div class="info-item">
+            <div class="info-label">현재 포인트</div>
+            <div class="info-value"><span id="pointsVal">0</span><span>P</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-item">
+            <div class="info-label">완주 도장</div>
+            <div class="info-value"><span id="stampsVal">0</span><span>개</span></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// localStorage에서 포인트, 도장 불러오기
+document.getElementById("pointsVal").innerText = localStorage.getItem("points") || 0;
+document.getElementById("stampsVal").innerText = localStorage.getItem("stamps") || 0;
+</script>
+
+</body>
+</html>

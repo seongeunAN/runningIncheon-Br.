@@ -318,7 +318,7 @@ body {
             margin-bottom: 20px;
             color: #ff5722;
         "></div>
-        <button class="btn-home" onclick="location.href='index.html'">홈으로 돌아가기</button>
+        <button class="btn-home" onclick="document.getElementById('successOverlay').classList.remove('active')">돌아가기</button>
     </div>
 </div>
 
@@ -447,6 +447,7 @@ document.getElementById("modalOverlay").addEventListener("click", function(e) {
 
 </body>
 </html>
+
 
 
 
